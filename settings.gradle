@@ -1,0 +1,12 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+rootProject.name = 'reverse-chain-adapter-root'
+
+include 'reverse-chain-adapter'
+project(':reverse-chain-adapter').projectDir = 'reverse-chain-adapter' as File
+
+include 'reverse-chain-adapter-client'
+project(':reverse-chain-adapter-client').projectDir = 'reverse-chain-adapter-client' as File
