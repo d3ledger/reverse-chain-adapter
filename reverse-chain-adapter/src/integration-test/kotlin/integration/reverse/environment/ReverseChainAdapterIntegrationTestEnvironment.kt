@@ -41,8 +41,7 @@ class ReverseChainAdapterIntegrationTestEnvironment : Closeable {
 
     init {
         containerHelper.rmqContainer.start()
-        irohaContainer =
-            IrohaContainer.createFixedPortIrohaContainer(IROHA_PORT).withPeerConfig(getPeerConfig()).withLogger(null)
+        irohaContainer = IrohaContainer().withFixedPort(IROHA_PORT).withPeerConfig(getPeerConfig()).withLogger(null)
         irohaContainer.start()
         irohaAPI = irohaContainer.api
     }

@@ -51,13 +51,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework/spring-context
     compile group: 'org.springframework', name: 'spring-context', version: '5.1.4.RELEASE'
     compile project(':reverse-chain-adapter-client')
-    compile("com.github.d3ledger.notary:notary-commons:$notary_version") {
-        exclude group: 'com.github.hyperledger.iroha-java', module: 'testcontainers'
-    }
-    testCompile("com.github.d3ledger.notary:notary-iroha-integration-test:$notary_version") {
-        exclude group: 'com.github.hyperledger.iroha-java', module: 'testcontainers'
-    }
-    testCompile 'com.github.dolgopolovwork.iroha-java:testcontainers:e4ba6f3593d3e02051a10433b3bace2544f8106d'
+    compile("com.github.d3ledger.notary:notary-commons:$notary_version")
+    testCompile("com.github.d3ledger.notary:notary-iroha-integration-test:$notary_version")
+    testCompile 'com.github.hyperledger.iroha-java:testcontainers:6.1.0'
 }
 
 sourceSets {
