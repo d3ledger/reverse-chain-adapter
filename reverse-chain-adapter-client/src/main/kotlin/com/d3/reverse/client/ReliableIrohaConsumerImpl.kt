@@ -9,6 +9,8 @@ import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.MessageProperties
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 import iroha.protocol.Endpoint
 import iroha.protocol.TransactionOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
@@ -55,7 +57,7 @@ class ReliableIrohaConsumerImpl(
                     )
                     logger.info(
                         "Tx with hash ${String.hex(Utils.hash(tx))} has been sent to the reverse chain-adapter" +
-                                "(queue ${reverseChainAdapterClientConfig.transactionQueueName})"
+                                "(queue '${reverseChainAdapterClientConfig.transactionQueueName}')"
                     )
                 }
             }
@@ -68,17 +70,34 @@ class ReliableIrohaConsumerImpl(
             // Wait a transaction until it is received
             while (!Thread.currentThread().isInterrupted) {
                 val statusReference = AtomicReference<IrohaTxStatus>()
-                waitForTerminalStatus.subscribe(irohaAPI, Utils.hash(tx))
-                    .blockingSubscribe(getTxStatusObserver(statusReference).build())
-                if (statusReference.get().status == Endpoint.TxStatus.NOT_RECEIVED) {
-                    subscriptionAttempt++
-                    logger.warn("Failed to subscribe to tx ${String.hex(Utils.hash(tx))} status. Try again(attempt $subscriptionAttempt).")
-                    continue
-                } else if (statusReference.get().isSuccessful()) {
-                    return@map String.hex(Utils.hash(tx))
-                } else {
-                    throw statusReference.get().txException!!
+                try {
+                    waitForTerminalStatus.subscribe(irohaAPI, Utils.hash(tx))
+                        .blockingSubscribe(getTxStatusObserver(statusReference).build())
+                    if (statusReference.get().status == Endpoint.TxStatus.NOT_RECEIVED) {
+                        subscriptionAttempt++
+                        logger.warn(
+                            "Failed to subscribe to tx ${String.hex(Utils.hash(tx))} status due to `NOT_RECEIVED` status. " +
+                                    "Try again(attempt $subscriptionAttempt)."
+                        )
+                        continue
+                    } else if (statusReference.get().isSuccessful()) {
+                        return@map String.hex(Utils.hash(tx))
+                    } else {
+                        throw statusReference.get().txException!!
+                    }
+                } catch (e: IllegalStateException) {
+                    if (!isIrohaConnectionError(e)) {
+                        throw e
+                    } else {
+                        waitReconnect()
+                        subscriptionAttempt++
+                        logger.warn(
+                            "Failed to subscribe to tx ${String.hex(Utils.hash(tx))} status due to GRPC error. " +
+                                    "Try again(attempt $subscriptionAttempt)."
+                        )
+                    }
                 }
+
             }
             throw IllegalStateException("Cannot send transaction. Thread was stopped.")
         }
@@ -100,4 +119,29 @@ class ReliableIrohaConsumerImpl(
     override fun send(lst: List<Transaction>): Result<Map<String, Boolean>, Exception> {
         throw UnsupportedOperationException()
     }
+
+    /**
+     * Waits a little for a Iroha reconnection
+     */
+    private fun waitReconnect() {
+        Thread.sleep(5_000)
+    }
 }
+
+/**
+ * Checks that [error] is an IO error
+ * @param error - error wrapped in a IllegalStateException object
+ * @return true if [error] is a Iroha connection error
+ */
+fun isIrohaConnectionError(error: IllegalStateException): Boolean {
+    val cause = error.cause
+    return cause != null && cause is StatusRuntimeException && isIrohaConnectionError(cause)
+}
+
+/**
+ * Checks that [error] is an IO error
+ * @param error - GRPC exception
+ * @return true if [error] is a Iroha connection error
+ */
+fun isIrohaConnectionError(error: StatusRuntimeException) = error.status.code == Status.UNAVAILABLE.code
+

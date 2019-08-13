@@ -17,8 +17,9 @@ import org.springframework.context.annotation.ComponentScan
 import kotlin.system.exitProcess
 
 private val logger = KLogging().logger
+const val REVERSE_CHAIN_ADAPTER_SERVICE_NAME = "reverse-chain-adapter"
 
-@ComponentScan(basePackages = ["com.d3.reverse"])
+@ComponentScan
 class ReverseChainAdapterApp
 
 fun main() {
