@@ -94,3 +94,9 @@ task runReverseChainAdapter(type: JavaExec) {
     main = mainClassName
     classpath = sourceSets.main.runtimeClasspath
 }
+
+project.afterEvaluate {
+    dockerfileCreate.dependsOn(shadowJar)
+    integrationTest.dependsOn(dockerfileCreate)
+    test.finalizedBy(integrationTest)
+}

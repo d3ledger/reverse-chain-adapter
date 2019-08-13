@@ -1,3 +1,8 @@
+/*
+ * Copyright D3 Ledger, Inc. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package integration.reverse
 
 import com.d3.commons.sidechain.iroha.util.impl.IrohaQueryHelperImpl
@@ -30,7 +35,7 @@ class ReverseChainAdapterIrohaFailIntegrationTest {
      * @then transaction is committed after Iroha restart
      */
     @Test
-    fun testSendTransactionBeforeStart() {
+    fun testSendTransactionOnIrohaFailure() {
         environment.irohaContainer.postgresDockerContainer.stop()
         environment.irohaContainer.irohaDockerContainer.stop()
         val startIrohaThread = Thread(Runnable {

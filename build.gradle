@@ -6,7 +6,7 @@
 buildscript {
     ext.kotlin_version = '1.3.10'
     ext.notary_version = '0dbfb1e122d5f2c5451ce7a54844905fce0c9445'
-    
+
     repositories {
         mavenCentral()
         jcenter()
@@ -16,6 +16,14 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+}
+
+plugins {
+    id "com.github.dolgopolovwork.testreport" version "1"
+}
+
+testReport {
+    testFolders = Arrays.asList("reverse-chain-adapter/src/integration-test")
 }
 
 allprojects {
@@ -51,4 +59,8 @@ allprojects {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
+}
+
+project.afterEvaluate {
+    test.finalizedBy(d3TestReport)
 }
