@@ -14,6 +14,36 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.1'
+    }
+}
+
+plugins {
+    id 'jp.co.soramitsu.sora-plugin' version '0.1.2'
+}
+
+apply plugin: "kotlin-spring" // See https://kotlinlang.org/docs/reference/compiler-plugins.html#kotlin-spring-compiler-plugin
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'application'
+
+shadowDistZip.classifier = 'shadow'
+shadowDistTar.classifier = 'shadow'
+// name of jar file that the shadowJar plugin generates
+shadowJar.archiveName = 'app.jar'
+
+mainClassName = 'com.d3.reverse.ReverseChainAdapterMain'
+group 'com.d3.reverse'
+
+// sora-plugin configs
+soramitsu {
+    projectGroup = 'd3-deploy'
+    docker {
+        // docker tag
+        tag = System.getenv("TAG")
+        // jar file that is used in the generated Dockerfile
+        jar = new File("build/libs/app.jar")
+        // the rest in configured using env variables
     }
 }
 

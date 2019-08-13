@@ -73,7 +73,6 @@ class ReverseChainAdapter(
                 throw IllegalStateException("Cannot run reverse chain adapter because it has been started previously")
             }
         }.map {
-
             val deliverCallback = { _: String, delivery: Delivery ->
                 val transaction = TransactionOuterClass.Transaction.parseFrom(delivery.body)
                 val txHash = String.hex(Utils.hash(transaction))
@@ -88,6 +87,7 @@ class ReverseChainAdapter(
                 }
             }
             channel.basicConsume(reverseChainAdapterConfig.transactionQueueName, false, deliverCallback, { _ -> })
+            Unit
         }
     }
 

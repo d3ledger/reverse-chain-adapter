@@ -2,14 +2,14 @@ package com.d3.reverse.client
 
 import com.d3.commons.model.IrohaCredential
 import com.d3.commons.sidechain.iroha.consumer.IrohaConsumerImpl
-import com.d3.commons.sidechain.iroha.consumer.status.TxState
-import com.d3.commons.sidechain.iroha.consumer.status.TxStatus
+import com.d3.commons.sidechain.iroha.consumer.status.IrohaTxStatus
 import com.d3.commons.util.hex
 import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.flatMap
 import com.github.kittinunf.result.map
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.MessageProperties
+import iroha.protocol.Endpoint
 import iroha.protocol.TransactionOuterClass
 import jp.co.soramitsu.iroha.java.IrohaAPI
 import jp.co.soramitsu.iroha.java.Transaction
@@ -60,12 +60,19 @@ class ReliableIrohaConsumerImpl(
                 }
             }
         }.map {
+            /*
+            There is no guarantee that a transaction is sent to Iroha at this moment.
+            That means that we should expect Iroha to answer with `NOT_RECEIVED` status.
+             */
+            var subscriptionAttempt = 0
             // Wait a transaction until it is received
             while (!Thread.currentThread().isInterrupted) {
-                val statusReference = AtomicReference<TxStatus>()
+                val statusReference = AtomicReference<IrohaTxStatus>()
                 waitForTerminalStatus.subscribe(irohaAPI, Utils.hash(tx))
                     .blockingSubscribe(getTxStatusObserver(statusReference).build())
-                if (statusReference.get().state == TxState.NOT_RECEIVED) {
+                if (statusReference.get().status == Endpoint.TxStatus.NOT_RECEIVED) {
+                    subscriptionAttempt++
+                    logger.warn("Failed to subscribe to tx ${String.hex(Utils.hash(tx))} status. Try again(attempt $subscriptionAttempt).")
                     continue
                 } else if (statusReference.get().isSuccessful()) {
                     return@map String.hex(Utils.hash(tx))
