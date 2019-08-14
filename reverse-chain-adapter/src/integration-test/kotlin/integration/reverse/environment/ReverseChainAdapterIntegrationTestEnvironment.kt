@@ -94,7 +94,8 @@ class ReverseChainAdapterIntegrationTestEnvironment : Closeable {
                     "client",
                     listOf(
                         Primitive.RolePermission.can_set_detail,
-                        Primitive.RolePermission.can_get_all_acc_detail
+                        Primitive.RolePermission.can_get_all_acc_detail,
+                        Primitive.RolePermission.can_get_my_account
                     )
                 )
                 .createDomain("d3", "client")

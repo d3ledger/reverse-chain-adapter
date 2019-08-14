@@ -102,10 +102,10 @@ class ReverseChainAdapter(
     }
 
     override fun close() {
-        connection.close()
         consumerTag?.let {
             channel.basicCancel(it)
         }
+        connection.close()
         consumerExecutorService.shutdownNow()
     }
 

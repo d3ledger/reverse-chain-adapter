@@ -51,7 +51,8 @@ class ReverseChainAdapterIrohaFailIntegrationTest {
         val reliableIrohaConsumer = ReliableIrohaConsumerImpl(
             environment.createReverseChainAdapterClientConfig(),
             environment.dummyIrohaCredential,
-            environment.irohaAPI
+            environment.irohaAPI,
+            quorum = 1
         )
         val dummyAccountId = environment.dummyIrohaCredential.accountId
         val key = "key"
