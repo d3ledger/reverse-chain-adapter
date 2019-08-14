@@ -64,6 +64,5 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
-gradle/wrapper/gradle-wrapper.jar
 reverse-chain-adapter/build/
 reverse-chain-adapter-client/build/
