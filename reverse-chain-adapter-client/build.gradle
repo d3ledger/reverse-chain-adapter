@@ -18,5 +18,5 @@ buildscript {
 }
 
 dependencies {
-    compile "com.github.d3ledger.notary:notary-commons:$notary_version"
+    implementation "com.github.d3ledger.notary:notary-commons:$notary_version"
 }
