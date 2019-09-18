@@ -19,6 +19,7 @@ buildscript {
 }
 
 plugins {
+    id "org.sonarqube" version "2.7.1"
     id "com.github.dolgopolovwork.testreport" version "1"
 }
 
@@ -40,6 +41,15 @@ allprojects {
 }
 
 allprojects {
+    sonarqube {
+        properties {
+            property "sonar.github.repository", "d3ledger/reverse-chain-adapter"
+            property "sonar.projectKey", "d3:reverse-chain-adapter"
+            property "sonar.java.binaries", "${project.projectDir}/build/classes"
+            property "sonar.java.libraries", "${project.projectDir}/build/libs"
+            property "sonar.java.test.binaries", "${project.projectDir}/build/test-results/test/binary"
+        }
+    }
     dependencies {
         // Iroha Pure Java library
         compile 'com.github.hyperledger.iroha-java:client:6.0.0'
